@@ -1,0 +1,92 @@
+{
+  "rooms": {
+    "AUAWT2": {
+      "code": "AUAWT2",
+      "createdAt": 1771237722989,
+      "maxPlayers": 5,
+      "settings": {
+        "taskCount": 4,
+        "maxSameType": 2
+      },
+      "players": [
+        {
+          "name": "张三",
+          "token": "925enifLo4Q1wcupsJQ2Ow",
+          "joinedAt": 1771237724880,
+          "role": "正常玩家",
+          "assignedAt": 1771237727323
+        },
+        {
+          "name": "李四",
+          "token": "0buzy8GWOdYyJADZC3jayw",
+          "joinedAt": 1771237727297,
+          "role": "卧底",
+          "assignedAt": 1771237727323
+        },
+        {
+          "name": "王五",
+          "token": "KmrY3jbmHbnx67cHBKbNLA",
+          "joinedAt": 1771237727305,
+          "role": "正常玩家",
+          "assignedAt": 1771237727323
+        },
+        {
+          "name": "赵六",
+          "token": "fPXT4OizuMGr4e3obKkqEA",
+          "joinedAt": 1771237727314,
+          "role": "正常玩家",
+          "assignedAt": 1771237727323
+        },
+        {
+          "name": "孙七",
+          "token": "mJkBFDE5V12XbcoUL2TdCw",
+          "joinedAt": 1771237727323,
+          "role": "正常玩家",
+          "assignedAt": 1771237727323
+        }
+      ],
+      "assigned": true,
+      "undercoverIndex": 1,
+      "undercoverTasks": [
+        {
+          "id": "eco-4",
+          "type": "经济类",
+          "text": "至少一次“提前清野/清线”导致错过队友集合（能说得通）"
+        },
+        {
+          "id": "tf-1",
+          "type": "团战类",
+          "text": "关键团战最后进场 2 次（像是“找角度/怕被秒”）"
+        },
+        {
+          "id": "act-5",
+          "type": "行为类",
+          "text": "至少一次“视野没做/没跟信号”导致队友被抓（像疏忽）"
+        },
+        {
+          "id": "psy-3",
+          "type": "心理类",
+          "text": "赛后发言至少说出 1 个“看似很专业但误导”的判断"
+        }
+      ],
+      "assignedAt": 1771237727323
+    },
+    "625HK8": {
+      "code": "625HK8",
+      "createdAt": 1771238043805,
+      "maxPlayers": 5,
+      "settings": {
+        "taskCount": 3,
+        "maxSameType": 2
+      },
+      "players": [
+        {
+          "name": "111",
+          "token": "Nh0IufwdSJziQIVXOmtmcw",
+          "joinedAt": 1771238050356
+        }
+      ],
+      "assigned": false
+    }
+  }
+}

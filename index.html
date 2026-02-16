@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>五人暗战模式 2.0｜身份&任务抽取</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand__title">五人暗战模式 2.0</div>
+        <div class="brand__subtitle">身份 & 隐藏任务抽取工具（单机版）</div>
+      </div>
+      <div class="header-actions">
+        <button id="btnReset" class="btn btn--ghost" type="button">重置</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="toast" class="toast" aria-live="polite" aria-atomic="true"></section>
+
+      <section class="card" id="screenSetup">
+        <h2 class="card__title">加入房间（异地模式）</h2>
+        <p class="card__desc">
+          适合“各自不在一起”的在线流程：每位玩家输入自己的名字和房间码加入。房间凑齐 5 人后由服务器统一随机分配身份；
+          服务器会在日志文件中记录名字、身份与卧底任务内容。身份信息显示后请截图保存或记牢。
+        </p>
+
+        <div class="grid grid--2">
+          <div class="field">
+            <label class="label" for="myName">你的名字</label>
+            <input id="myName" class="input" placeholder="必填，如：阿珂本珂" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label class="label" for="roomCode">房间码</label>
+            <input id="roomCode" class="input" placeholder="6 位，如：A2K9QW" autocomplete="off" />
+            <div class="hint">如果你是房主，先点“创建房间”生成房间码，再发给其他 4 人。</div>
+          </div>
+        </div>
+
+        <div class="grid grid--3">
+          <div class="field">
+            <label class="label" for="taskCount">卧底抽取任务数量</label>
+            <select id="taskCount" class="select">
+              <option value="3">3 个</option>
+              <option value="4" selected>4 个（推荐）</option>
+              <option value="5">5 个</option>
+            </select>
+            <div class="hint">卧底完成任意 3 个任务即可触发“任务胜利”。</div>
+          </div>
+          <div class="field">
+            <label class="label" for="maxSameType">同类型任务上限</label>
+            <select id="maxSameType" class="select">
+              <option value="1">最多 1 个</option>
+              <option value="2" selected>最多 2 个（规则默认）</option>
+              <option value="3">最多 3 个</option>
+            </select>
+            <div class="hint">用于限制卧底刷同类型任务。</div>
+          </div>
+          <div class="field">
+            <label class="label" for="seedMode">随机方式</label>
+            <select id="seedMode" class="select">
+              <option value="secure" selected>服务器统一随机（推荐）</option>
+              <option value="seeded" disabled>（此模式在异地版中不使用）</option>
+            </select>
+            <div class="hint">手动种子会让抽取在同一输入下可复现。</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btnCreateRoom" class="btn btn--primary" type="button">创建房间</button>
+          <button id="btnJoinRoom" class="btn btn--ghost" type="button">加入并抽取</button>
+          <button id="btnRules" class="btn btn--ghost" type="button">查看规则摘要</button>
+        </div>
+      </section>
+
+      <section class="card" id="screenReveal" hidden>
+        <div class="card__row">
+          <div>
+            <h2 class="card__title">你的身份</h2>
+            <p class="card__desc">
+              你好，<span id="revealPlayerName" class="pill">玩家</span>。身份信息属于个人隐私，建议在无人旁观时再点击“查看”。
+            </p>
+          </div>
+          <div class="progress">
+            <div class="progress__label">
+              <span id="revealIndexText">等待中…</span>
+            </div>
+            <div class="progress__bar">
+              <div id="revealProgress" class="progress__barFill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="revealMask" class="mask">
+          <div class="mask__inner">
+            <div class="mask__title" id="maskTitle">等待房间凑齐 5 人</div>
+            <div class="mask__desc" id="maskDesc">当前人数：—/5。凑齐后系统会自动分配身份。</div>
+            <button id="btnRevealNow" class="btn btn--primary" type="button">刷新状态</button>
+          </div>
+        </div>
+
+        <div id="revealContent" class="reveal" hidden>
+          <div class="reveal__top">
+            <div class="role" id="roleBadge">身份</div>
+            <div class="roleDesc" id="roleDesc">描述</div>
+            <div class="roleLane" id="laneText" hidden>分路：—</div>
+          </div>
+
+          <div id="undercoverBlock" class="undercover" hidden>
+            <div class="undercover__title">你的隐藏任务（结算前不要公开）</div>
+            <div class="undercover__meta">
+              完成任意 <b>3</b> 个即可任务胜利；同类型任务最多计入 <b id="maxSameTypeText">2</b> 个。
+            </div>
+            <ol id="taskList" class="taskList"></ol>
+            <div class="hint">
+              任务必须是“合理失误型”，明显摆烂无效；如被一致认定“恶意演”，可在赛后结算时判定任务作废。
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="hint">
+            强烈建议：<b>立刻截图保存</b>或记牢。页面刷新可能导致你需要重新加入房间查看（取决于浏览器清理缓存/隐私模式）。
+          </div>
+
+          <div class="actions">
+            <button id="btnMemorized" class="btn btn--primary" type="button">我已截图/记牢</button>
+            <button id="btnHide" class="btn btn--ghost" type="button">立刻遮挡</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="screenAfter" hidden>
+        <h2 class="card__title">赛后流程</h2>
+        <p class="card__desc">
+          建议流程：每人发言 1 分钟 → 自由辩论 2 分钟 → 匿名投票 → 公布身份 → 卧底公开任务完成情况。
+        </p>
+
+        <div class="grid grid--2">
+          <div class="panel">
+            <div class="panel__title">计时器</div>
+            <div class="timer">
+              <div class="timer__readout" id="timerReadout">01:00</div>
+              <div class="timer__controls">
+                <button class="btn btn--ghost" id="btnTimerSpeech" type="button">发言 1:00</button>
+                <button class="btn btn--ghost" id="btnTimerDebate" type="button">辩论 2:00</button>
+                <button class="btn btn--ghost" id="btnTimerStop" type="button">停止</button>
+                <button class="btn btn--ghost" id="btnTimerStartPause" type="button">开始/暂停</button>
+              </div>
+            </div>
+            <div class="hint">可把手机放中间当公共计时器。</div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__title">匿名投票（单机）</div>
+            <div class="hint">
+              依次把手机递给每位玩家进行投票；投票结果在全部完成前不会展示。
+            </div>
+            <div class="vote">
+              <div class="vote__row">
+                <div>
+                  当前投票人：<span class="pill" id="voterName">玩家</span>
+                </div>
+                <div class="muted" id="voteProgressText">0/5</div>
+              </div>
+              <div class="field">
+                <label class="label" for="voteSelect">你认为卧底是：</label>
+                <select id="voteSelect" class="select"></select>
+              </div>
+              <div class="actions">
+                <button id="btnCastVote" class="btn btn--primary" type="button">提交本票</button>
+                <button id="btnSkipVote" class="btn btn--ghost" type="button">弃票</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grid grid--2">
+          <div class="panel">
+            <div class="panel__title">结算输入</div>
+            <div class="field">
+              <label class="label" for="gameResult">对局结果</label>
+              <select id="gameResult" class="select">
+                <option value="win" selected>我们赢了</option>
+                <option value="lose">我们输了</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label" for="undercoverTasksDone">卧底完成任务数（卧底自己输入）</label>
+              <select id="undercoverTasksDone" class="select">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+              <div class="hint">若 ≥3，则按“任务隐藏结算机制”直接任务胜利。</div>
+            </div>
+            <div class="actions">
+              <button id="btnRevealOutcome" class="btn btn--primary" type="button">公布结算</button>
+            </div>
+          </div>
+
+          <div class="panel" id="outcomePanel" hidden>
+            <div class="panel__title">结算结果</div>
+            <div class="outcome" id="outcomeText"></div>
+            <div class="divider"></div>
+            <div class="panel__title">投票结果</div>
+            <div class="muted" id="voteSummary"></div>
+            <div class="divider"></div>
+            <div class="panel__title">身份公开</div>
+            <ul id="identitySummary" class="identity"></ul>
+            <div class="divider"></div>
+            <div class="panel__title">卧底任务（赛后可公开）</div>
+            <ol id="undercoverTasksPublic" class="taskList"></ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="screenRules" hidden>
+        <h2 class="card__title">规则摘要（2.0）</h2>
+        <div class="rules">
+          <div class="rules__block">
+            <div class="rules__title">身份</div>
+            <ul>
+              <li>5 人：4 名正常玩家 + 1 名卧底（随机抽取）</li>
+            </ul>
+          </div>
+          <div class="rules__block">
+            <div class="rules__title">胜利条件</div>
+            <ul>
+              <li><b>正常阵营</b>：赢下比赛 + 找出卧底</li>
+              <li>
+                <b>卧底</b>：满足其一即可胜利
+                <ul>
+                  <li>游戏输掉 + 未被投票找出</li>
+                  <li>完成 3 个隐藏任务（即使游戏赢了）</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+          <div class="rules__block">
+            <div class="rules__title">隐藏任务系统</div>
+            <ul>
+              <li>卧底开局抽取 3–5 个任务，完成其中任意 3 个触发“任务胜利”</li>
+              <li>任务必须是“合理失误型”，不能明显摆烂</li>
+              <li>限制：同类型任务最多完成 2 个；明显送人头任务无效；被举报“恶意演”可取消任务</li>
+              <li><b>任务隐藏结算机制</b>：任务完成后不能立刻宣布，必须等游戏结束揭晓</li>
+            </ul>
+          </div>
+          <div class="actions">
+            <button id="btnBackFromRules" class="btn btn--primary" type="button">返回</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="muted">提示：这是单机工具，不会上传任何数据；刷新页面会丢失当前局信息。</div>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+
